@@ -4,15 +4,18 @@
  * Implements hook_field_formatter_info().
  */
 function views_field_formatter_field_formatter_info() {
+  $info = field_info_field_types();
+
   $formatters = array(
     'views_field_formatter' => array(
-      'label' => t('Display the result of a view based on the entity argument.'),
-      'field types' => array('image', 'text', 'file', 'text_long', 'text_with_summary'),
+      'label' => t('Use a view. The entity ID will be passed as argument.'),
+      'field types' => array_keys($info),
       'settings' => array(
         'view' => '',
       ),
     ),
   );
+
   return $formatters;
 }
 
@@ -27,11 +30,11 @@ function views_field_formatter_field_formatter_settings_form($field, $instance, 
   $field_id = $field['field_name'];
   $field_instances = field_info_instances();
 
-  $options = array();
+  $enabled_entities = array();
   foreach($field_instances as $entity => $bundles) {
     foreach($bundles as $bundle => $bundle_data) {
       if (isset($field_instances[$entity][$bundle][$field_id])) {
-        $options[$entity] = $entity;
+        $enabled_entities[$entity] = $entity;
       }
     }
   };
@@ -39,18 +42,20 @@ function views_field_formatter_field_formatter_settings_form($field, $instance, 
   $views = views_get_all_views();
   $options1 = array();
   foreach ($views as $view => $data) {
-    foreach ($data->display as $display => $displaydata) {
-      if (in_array($data->base_table, $options)) {
-        $view_id = $view . '::' . $display;
-        $options1[$view_id] = $view . '::' . $display;
+    if (isset($form_state['view']) && $form_state['view']->name == $view) {
+      continue;
+    }
+    if (in_array($data->base_table, $enabled_entities)) {
+      foreach ($data->display as $display => $display_data) {
+        $options1[$view][$view . '::' . $display] = $display;
       }
     }
   }
 
   $element['view'] = array(
-    '#title' => t('View and display'),
+    '#title' => t('View'),
     '#type' => 'select',
-    '#default_value' => $settings['image_field'],
+    '#default_value' => $settings['view'],
     '#options' => $options1,
   );
 
