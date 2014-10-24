@@ -1,0 +1,100 @@
+<?php
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function views_field_formatter_field_formatter_info() {
+  $formatters = array(
+    'views_field_formatter' => array(
+      'label' => t('Display the result of a view based on the entity argument.'),
+      'field types' => array('image', 'text', 'file', 'text_long', 'text_with_summary'),
+      'settings' => array(
+        'view' => '',
+      ),
+    ),
+  );
+  return $formatters;
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function views_field_formatter_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $element = array();
+
+  $field_id = $field['field_name'];
+  $field_instances = field_info_instances();
+
+  $options = array();
+  foreach($field_instances as $entity => $bundles) {
+    foreach($bundles as $bundle => $bundle_data) {
+      if (isset($field_instances[$entity][$bundle][$field_id])) {
+        $options[$entity] = $entity;
+      }
+    }
+  };
+
+  $views = views_get_all_views();
+  $options1 = array();
+  foreach ($views as $view => $data) {
+    foreach ($data->display as $display => $displaydata) {
+      if (in_array($data->base_table, $options)) {
+        $view_id = $view . '::' . $display;
+        $options1[$view_id] = $view . '::' . $display;
+      }
+    }
+  }
+
+  $element['view'] = array(
+    '#title' => t('View and display'),
+    '#type' => 'select',
+    '#default_value' => $settings['image_field'],
+    '#options' => $options1,
+  );
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function views_field_formatter_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $summary = array();
+  list($view, $view_display) = explode('::', $settings['view']);
+
+  if ($display['type'] == 'views_field_formatter') {
+    if (isset($settings['view'])) {
+      $summary[] = t('View: @view', array('@view' => $view));
+      $summary[] = t('Display: @display', array('@display' => $view_display));
+    }
+  }
+
+  return implode('<br />', $summary);
+}
+
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function views_field_formatter_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  $settings = $display['settings'];
+  list($view, $view_display) = explode('::', $settings['view']);
+
+  $entity_info = entity_get_info($entity_type);
+  $key = $entity_info['entity keys']['id'];
+
+  if ($display['type'] == 'views_field_formatter') {
+    foreach ($items as $delta => $item) {
+      $element[$delta] = array(
+        '#markup' => views_embed_view($view, $view_display, $entity->$key)
+      );
+    }
+  }
+
+  return $element;
+}
