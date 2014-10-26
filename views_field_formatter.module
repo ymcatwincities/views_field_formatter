@@ -8,7 +8,7 @@ function views_field_formatter_field_formatter_info() {
 
   $formatters = array(
     'views_field_formatter' => array(
-      'label' => t('Use a view. The entity ID will be passed as argument.'),
+      'label' => t('View'),
       'field types' => array_keys($info),
       'settings' => array(
         'view' => '',
@@ -42,22 +42,43 @@ function views_field_formatter_field_formatter_settings_form($field, $instance, 
   $views = views_get_all_views();
   $options1 = array();
   foreach ($views as $view => $data) {
+    // If editing a field from a Views, remove the current view from the list.
     if (isset($form_state['view']) && $form_state['view']->name == $view) {
       continue;
     }
+
+    // Remove Views who doesn't have the tag 'views_field_formatter'.
+    $tags = explode(',', $data->tag);
+    if (!in_array('views_field_formatter', $tags)) {
+      continue;
+    }
+
+    // Remove disabled views.
+    if ($data->disabled == TRUE) {
+      continue;
+    }
+
     if (in_array($data->base_table, $enabled_entities)) {
       foreach ($data->display as $display => $display_data) {
-        $options1[$view][$view . '::' . $display] = $display;
+        $options1[$data->human_name][$view . '::' . $display] = $display;
       }
     }
   }
 
-  $element['view'] = array(
-    '#title' => t('View'),
-    '#type' => 'select',
-    '#default_value' => $settings['view'],
-    '#options' => $options1,
-  );
+  if (!empty($options1)) {
+    $element['view'] = array(
+      '#title' => t('View'),
+      '#description' => t('Select the view (<em><a href="@add_view_url">or create a new one</a></em>) that will be used to get the value of the field. Only views with tag <em>views_field_formatter</em> will be visible.', array('@add_view_url' => url('admin/structure/views/add'))),
+      '#type' => 'select',
+      '#default_value' => $settings['view'],
+      '#options' => $options1,
+    );
+  } else {
+    $element['help'] = array(
+      '#markup' => t('<p>No available Views were found. <a href="@add_view_url">Create</a> or <a href="@enable_views_url">enable</a> a views with tag <em>views_field_formatter</em>.</p>', array('@add_view_url' => url('admin/structure/views/add'), '@enable_views_url' => url('admin/structure/views')))
+    );
+  }
+
 
   return $element;
 }
@@ -96,10 +117,20 @@ function views_field_formatter_field_formatter_view($entity_type, $entity, $fiel
   if ($display['type'] == 'views_field_formatter') {
     foreach ($items as $delta => $item) {
       $element[$delta] = array(
-        '#markup' => views_embed_view($view, $view_display, $entity->$key)
+        '#markup' => views_embed_view($view, $view_display, $entity->$key, $delta)
       );
     }
   }
 
   return $element;
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function views_field_formatter_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'views_field_formatter') . '/views',
+  );
 }
