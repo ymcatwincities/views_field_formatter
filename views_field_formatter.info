@@ -1,4 +1,0 @@
-name = Views field formatter
-description = Use the result of a view to display a field.
-core = 7.x
-dependencies[] = views

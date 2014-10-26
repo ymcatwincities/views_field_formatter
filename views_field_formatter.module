@@ -1,27 +1,6 @@
 <?php
 
-/**
- * Implements hook_field_formatter_info().
- */
-function views_field_formatter_field_formatter_info() {
-  $info = field_info_field_types();
-
-  $formatters = array(
-    'views_field_formatter' => array(
-      'label' => t('View'),
-      'field types' => array_keys($info),
-      'settings' => array(
-        'view' => '',
-      ),
-    ),
-  );
-
-  return $formatters;
-}
-
-/**
- * Implements hook_field_formatter_settings_form().
- */
+/*
 function views_field_formatter_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
   $display = $instance['display'][$view_mode];
   $settings = $display['settings'];
@@ -39,7 +18,7 @@ function views_field_formatter_field_formatter_settings_form($field, $instance, 
     }
   };
 
-  $views = views_get_all_views();
+  $views =  \Drupal\views\Views::getAllViews();
   $options1 = array();
   foreach ($views as $view => $data) {
     // If editing a field from a Views, remove the current view from the list.
@@ -68,14 +47,14 @@ function views_field_formatter_field_formatter_settings_form($field, $instance, 
   if (!empty($options1)) {
     $element['view'] = array(
       '#title' => t('View'),
-      '#description' => t('Select the view (<em><a href="@add_view_url">or create a new one</a></em>) that will be used to get the value of the field. Only views with tag <em>views_field_formatter</em> will be visible.', array('@add_view_url' => url('admin/structure/views/add'))),
+      '#description' => t('Select the view (<em><a href="@add_view_url">or create a new one</a></em>) that will be used to get the value of the field. Only views with tag <em>views_field_formatter</em> will be visible.', array('@add_view_url' => \Drupal\Core\Url::fromRoute('views_ui.add'))),
       '#type' => 'select',
       '#default_value' => $settings['view'],
       '#options' => $options1,
     );
   } else {
     $element['help'] = array(
-      '#markup' => t('<p>No available Views were found. <a href="@add_view_url">Create</a> or <a href="@enable_views_url">enable</a> a views with tag <em>views_field_formatter</em>.</p>', array('@add_view_url' => url('admin/structure/views/add'), '@enable_views_url' => url('admin/structure/views')))
+      '#markup' => t('<p>No available Views were found. <a href="@add_view_url">Create</a> or <a href="@enable_views_url">enable</a> a views with tag <em>views_field_formatter</em>.</p>', array('@add_view_url' => \Drupal\Core\Url::fromRoute('views_ui.add'), '@enable_views_url' => \Drupal\Core\Url::fromRoute('views_ui.list')))
     );
   }
 
@@ -83,9 +62,6 @@ function views_field_formatter_field_formatter_settings_form($field, $instance, 
   return $element;
 }
 
-/**
- * Implements hook_field_formatter_settings_summary().
- */
 function views_field_formatter_field_formatter_settings_summary($field, $instance, $view_mode) {
   $display = $instance['display'][$view_mode];
   $settings = $display['settings'];
@@ -103,15 +79,12 @@ function views_field_formatter_field_formatter_settings_summary($field, $instanc
 }
 
 
-/**
- * Implements hook_field_formatter_view().
- */
 function views_field_formatter_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
   $settings = $display['settings'];
   list($view, $view_display) = explode('::', $settings['view']);
 
-  $entity_info = entity_get_info($entity_type);
+  $entity_info = \Drupal::entityManager()->getDefinition($entity_type);
   $key = $entity_info['entity keys']['id'];
 
   if ($display['type'] == 'views_field_formatter') {
@@ -125,12 +98,4 @@ function views_field_formatter_field_formatter_view($entity_type, $entity, $fiel
   return $element;
 }
 
-/**
- * Implements hook_views_api().
  */
-function views_field_formatter_views_api() {
-  return array(
-    'api' => 3,
-    'path' => drupal_get_path('module', 'views_field_formatter') . '/views',
-  );
-}
