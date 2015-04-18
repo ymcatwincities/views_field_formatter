@@ -24,6 +24,7 @@ class ViewsFieldFormatter extends FormatterBase {
   public static function defaultSettings() {
     return array(
       'view' => '',
+      'multiple' => FALSE
     );
   }
 
@@ -34,24 +35,30 @@ class ViewsFieldFormatter extends FormatterBase {
     $element = array();
 
     $views =  \Drupal\views\Views::getAllViews();
-    $options1 = array();
+    $options = array();
     foreach ($views as $view) {
       foreach ($view->get('display') as $display) {
-        $options1[$view->get('label')][$view->id . '::' . $display['id']] = $display['display_title'];
+        $options[$view->get('label')][$view->get('id') . '::' . $display['id']] = $display['display_title'];
       }
     }
 
-    if (!empty($options1)) {
+    if (!empty($options)) {
       $element['view'] = array(
         '#title' => t('View'),
-        '#description' => t('Select the view (<em><a href="@add_view_url">or create a new one</a></em>) that will be used to get the value of the field. Only views with tag <em>views_field_formatter</em> will be visible.', array('@add_view_url' => \Drupal\Core\Url::fromRoute('views_ui.add'))),
+        '#description' => t('Select the view (<em><a href="@add_view_url">or create a new one</a></em>) that will be used to get the value of the field. Only views with tag <em>views_field_formatter</em> will be visible.', array('@add_view_url' => \Drupal\Core\Url::fromRoute('views_ui.add')->toString())),
         '#type' => 'select',
         '#default_value' => $this->getSetting('view'),
-        '#options' => $options1,
+        '#options' => $options,
+      );
+      $element['multiple'] = array(
+        '#title' => t('Multiple'),
+        '#description' => t('If the field is configured as multiple, should we display a view per item ? If selected, there will be one view per item. The arguments passed to that view are in this order: the field item value, the entity id and the item delta.'),
+        '#type' => 'checkbox',
+        '#default_value' => boolval($this->getSetting('multiple')),
       );
     } else {
       $element['help'] = array(
-        '#markup' => t('<p>No available Views were found. <a href="@add_view_url">Create</a> or <a href="@enable_views_url">enable</a> a views with tag <em>views_field_formatter</em>.</p>', array('@add_view_url' => \Drupal\Core\Url::fromRoute('views_ui.add'), '@enable_views_url' => \Drupal\Core\Url::fromRoute('views_ui.list')))
+        '#markup' => t('<p>No available Views were found. <a href="@add_view_url">Create</a> or <a href="@enable_views_url">enable</a> a views with tag <em>views_field_formatter</em>.</p>', array('@add_view_url' => \Drupal\Core\Url::fromRoute('views_ui.add')->toString(), '@enable_views_url' => \Drupal\Core\Url::fromRoute('views_ui.list')->toString()))
       );
     }
 
@@ -62,13 +69,15 @@ class ViewsFieldFormatter extends FormatterBase {
    * {@inheritdoc}
    */
   public function settingsSummary() {
-    $view = $this->getSetting('view');
     $summary = array();
+    $view = $this->getSetting('view');
+    $multiple = $this->getSetting('multiple') ? 'Enabled' : 'Disabled';
     list($view, $view_display) = explode('::', $view);
 
     if (isset($view)) {
       $summary[] = t('View: @view', array('@view' => $view));
       $summary[] = t('Display: @display', array('@display' => $view_display));
+      $summary[] = t('Multiple: @multiple', array('@multiple' => t($multiple)));
     }
 
     return $summary;
@@ -81,11 +90,22 @@ class ViewsFieldFormatter extends FormatterBase {
     $elements = array();
     list($view, $view_display) = explode('::', $this->getSetting('view'));
 
-    $id = $items->getParent()->getValue()->id();
+    $columns = array_keys($items->getFieldDefinition()->getFieldStorageDefinition()->getSchema()['columns']);
+    $column = array_shift($columns);
 
-    foreach ($items as $delta => $item) {
-      // Passing the ID to the view wont work until: [#2208811] is fixed.
-      $elements[$delta] = views_embed_view($view, $view_display, $id);
+    $id = $items->getParent()->getValue()->id();
+    $cardinality = $items->getFieldDefinition()->getFieldStorageDefinition()->getCardinality();
+
+    if ($this->getSetting('multiple') && $cardinality != 1) {
+      foreach ($items as $delta => $item) {
+        $value = isset($item->getValue()[$column]) ? $item->getValue()[$column] : NULL;
+        $elements[$delta] = views_embed_view($view, $view_display, $value, $id, $delta);
+      }
+    } else {
+      $item = $items[0];
+      $delta = 0;
+      $value = isset($item->getValue()[$column]) ? $item->getValue()[$column] : NULL;
+      $elements[$delta] = views_embed_view($view, $view_display, $value, $id, $delta);
     }
 
     return $elements;
