@@ -24,7 +24,8 @@ class ViewsFieldFormatter extends FormatterBase {
   public static function defaultSettings() {
     return array(
       'view' => '',
-      'multiple' => FALSE
+      'multiple' => FALSE,
+      'implode_character' => '',
     );
   }
 
@@ -45,7 +46,7 @@ class ViewsFieldFormatter extends FormatterBase {
     if (!empty($options)) {
       $element['view'] = array(
         '#title' => t('View'),
-        '#description' => t('Select the view (<em><a href="@add_view_url">or create a new one</a></em>) that will be used to get the value of the field. Only views with tag <em>views_field_formatter</em> will be visible.', array('@add_view_url' => \Drupal\Core\Url::fromRoute('views_ui.add')->toString())),
+        '#description' => t('Select the view that will be used to get the value of the field.'),
         '#type' => 'select',
         '#default_value' => $this->getSetting('view'),
         '#options' => $options,
@@ -56,9 +57,20 @@ class ViewsFieldFormatter extends FormatterBase {
         '#type' => 'checkbox',
         '#default_value' => boolval($this->getSetting('multiple')),
       );
+      $element['implode_character'] = array(
+        '#title' => t('Implode with this character'),
+        '#description' => t('If it is set, all field values are imploded with this character and sent as one views argument. Empty to disable.'),
+        '#type' => 'textfield',
+        '#default_value' => $this->getSetting('implode_character'),
+        '#states' => array(
+          'visible' => array(
+            ':input[name="fields[body][settings_edit_form][settings][multiple]"]' => array('checked' => TRUE),
+          ),
+        ),
+      );
     } else {
       $element['help'] = array(
-        '#markup' => t('<p>No available Views were found. <a href="@add_view_url">Create</a> or <a href="@enable_views_url">enable</a> a views with tag <em>views_field_formatter</em>.</p>', array('@add_view_url' => \Drupal\Core\Url::fromRoute('views_ui.add')->toString(), '@enable_views_url' => \Drupal\Core\Url::fromRoute('views_ui.list')->toString()))
+        '#markup' => t('<p>No available Views were found.</p>'),
       );
     }
 
@@ -70,14 +82,18 @@ class ViewsFieldFormatter extends FormatterBase {
    */
   public function settingsSummary() {
     $summary = array();
-    $view = $this->getSetting('view');
-    $multiple = $this->getSetting('multiple') ? 'Enabled' : 'Disabled';
-    list($view, $view_display) = explode('::', $view);
+    $settings = $this->getSettings();
+    list($view, $view_display) = explode('::', $settings['view']);
+    $multiple = ((bool) $settings['multiple'] === TRUE) ? 'Enabled' : 'Disabled';
 
     if (isset($view)) {
       $summary[] = t('View: @view', array('@view' => $view));
       $summary[] = t('Display: @display', array('@display' => $view_display));
       $summary[] = t('Multiple: @multiple', array('@multiple' => t($multiple)));
+    }
+
+    if (!empty($settings['implode_character'])) {
+      $summary[] = t('Implode character: @character', array('@character' => $settings['implode_character']));
     }
 
     return $summary;
@@ -86,9 +102,10 @@ class ViewsFieldFormatter extends FormatterBase {
   /**
    * {@inheritdoc}
    */
-  public function viewElements(FieldItemListInterface $items) {
+  public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = array();
-    list($view, $view_display) = explode('::', $this->getSetting('view'));
+    $settings = $this->getSettings();
+    list($view, $view_display) = explode('::', $settings['view'], 2);
 
     $columns = array_keys($items->getFieldDefinition()->getFieldStorageDefinition()->getSchema()['columns']);
     $column = array_shift($columns);
@@ -96,10 +113,19 @@ class ViewsFieldFormatter extends FormatterBase {
     $id = $items->getParent()->getValue()->id();
     $cardinality = $items->getFieldDefinition()->getFieldStorageDefinition()->getCardinality();
 
-    if ($this->getSetting('multiple') && $cardinality != 1) {
-      foreach ($items as $delta => $item) {
-        $value = isset($item->getValue()[$column]) ? $item->getValue()[$column] : NULL;
-        $elements[$delta] = views_embed_view($view, $view_display, $value, $id, $delta);
+    if ( ((bool) $settings['multiple'] === TRUE) && ($cardinality != 1)) {
+      if (!empty($settings['implode_character'])) {
+        $values = array();
+        foreach ($items as $item) {
+          $values[] = isset($item->getValue()[$column]) ? $item->getValue()[$column] : NULL;
+        }
+        $value = implode($settings['implode_character'], array_filter($values));
+        $elements[0] = views_embed_view($view, $view_display, $value, $id, 0);
+      } else {
+        foreach ($items as $delta => $item) {
+          $value = isset($item->getValue()[$column]) ? $item->getValue()[$column] : NULL;
+          $elements[$delta] = views_embed_view($view, $view_display, $value, $id, $delta);
+        }
       }
     } else {
       $item = $items[0];
