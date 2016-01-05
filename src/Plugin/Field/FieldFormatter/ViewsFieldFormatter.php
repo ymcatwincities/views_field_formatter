@@ -92,8 +92,10 @@ class ViewsFieldFormatter extends FormatterBase {
       $summary[] = t('Multiple: @multiple', array('@multiple' => t($multiple)));
     }
 
-    if (!empty($settings['implode_character'])) {
-      $summary[] = t('Implode character: @character', array('@character' => $settings['implode_character']));
+    if ($multiple == 'Enabled') {
+      if (!empty($settings['implode_character'])) {
+        $summary[] = t('Implode character: @character', array('@character' => $settings['implode_character']));
+      }
     }
 
     return $summary;
