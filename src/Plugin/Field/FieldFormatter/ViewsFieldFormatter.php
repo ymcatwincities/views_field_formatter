@@ -122,18 +122,33 @@ class ViewsFieldFormatter extends FormatterBase {
           $values[] = isset($item->getValue()[$column]) ? $item->getValue()[$column] : NULL;
         }
         $value = implode($settings['implode_character'], array_filter($values));
-        $elements[0] = views_embed_view($view, $view_display, $value, $id, 0);
+        $elements[0] = [
+          '#type' => 'view',
+          '#name' => $view,
+          '#display_id' => $view_display,
+          '#arguments' => [$value, $id, 0],
+        ];
       } else {
         foreach ($items as $delta => $item) {
           $value = isset($item->getValue()[$column]) ? $item->getValue()[$column] : NULL;
-          $elements[$delta] = views_embed_view($view, $view_display, $value, $id, $delta);
+          $elements[$delta] = [
+            '#type' => 'view',
+            '#name' => $view,
+            '#display_id' => $view_display,
+            '#arguments' => [$value, $id, $delta],
+          ];
         }
       }
     } else {
       $item = $items[0];
       $delta = 0;
       $value = isset($item->getValue()[$column]) ? $item->getValue()[$column] : NULL;
-      $elements[$delta] = views_embed_view($view, $view_display, $value, $id, $delta);
+      $elements[$delta] = [
+        '#type' => 'view',
+        '#name' => $view,
+        '#display_id' => $view_display,
+        '#arguments' => [$value, $id, $delta],
+      ];
     }
 
     return $elements;
