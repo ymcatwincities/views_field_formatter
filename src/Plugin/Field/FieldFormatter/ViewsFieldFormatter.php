@@ -270,7 +270,9 @@ class ViewsFieldFormatter extends FormatterBase {
           $cardinality = $items->getFieldDefinition()->getFieldStorageDefinition()->getCardinality();
 
           /** @var FieldItemInterface $item */
-          $arguments[$argument] = isset($item->getValue()[$column]) ? $item->getValue()[$column] : NULL;
+          if ($item) {
+            $arguments[$argument] = isset($item->getValue()[$column]) ? $item->getValue()[$column] : NULL;
+          }
 
           if (((bool) $settings['multiple'] === TRUE) && ($cardinality != 1)) {
             if (!empty($settings['implode_character'])) {
