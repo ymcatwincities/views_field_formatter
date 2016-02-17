@@ -8,7 +8,6 @@
 
 namespace Drupal\views_field_formatter\Plugin\Field\FieldFormatter;
 
-use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -57,12 +56,12 @@ class ViewsFieldFormatter extends FormatterBase {
    * {@inheritdoc}
    */
   public static function defaultSettings() {
-    return array(
+    return [
       'view' => '',
       'arguments' => ['field_value', 'entity_id', 'delta'],
       'multiple' => FALSE,
       'implode_character' => '',
-    );
+    ];
   }
 
   /**
@@ -91,8 +90,8 @@ class ViewsFieldFormatter extends FormatterBase {
 
     if (!empty($options)) {
       $element['view'] = array(
-        '#title' => t('View'),
-        '#description' => t('Select the view that will be used to get the value of the field.'),
+        '#title' => $this->t('View'),
+        '#description' => $this->t('Select the view that will be displayed instead of the field\'s value'),
         '#type' => 'select',
         '#default_value' => $this->getSetting('view'),
         '#options' => $options,
@@ -100,7 +99,7 @@ class ViewsFieldFormatter extends FormatterBase {
 
       $element['arguments'] = [
         '#type' => 'table',
-        '#header' => [t('Arguments'), $this->t('Weight')],
+        '#header' => [$this->t('View Arguments'), $this->t('Weight')],
         '#tabledrag' => [[
           'action' => 'order',
           'relationship' => 'sibling',
@@ -138,14 +137,14 @@ class ViewsFieldFormatter extends FormatterBase {
       }
 
       $element['multiple'] = array(
-        '#title' => t('Multiple'),
-        '#description' => t('If the field is configured as multiple, should we display a view per item ? If selected, there will be one view per item. The arguments passed to that view are in this order: the field item value, the entity id and the item delta.'),
+        '#title' => $this->t('Multiple'),
+        '#description' => $this->t('If the field is configured as multiple, should we display a view per item ? If selected, there will be one view per item. The arguments passed to that view are in this order: the field item value, the entity id and the item delta.'),
         '#type' => 'checkbox',
         '#default_value' => boolval($this->getSetting('multiple')),
       );
       $element['implode_character'] = array(
-        '#title' => t('Implode with this character'),
-        '#description' => t('If it is set, all field values are imploded with this character and sent as one views argument. Empty to disable.'),
+        '#title' => $this->t('Implode with this character'),
+        '#description' => $this->t('If it is set, all field values are imploded with this character and sent as one views argument. Empty to disable.'),
         '#type' => 'textfield',
         '#default_value' => $this->getSetting('implode_character'),
         '#states' => array(
@@ -157,7 +156,7 @@ class ViewsFieldFormatter extends FormatterBase {
     }
     else {
       $element['help'] = array(
-        '#markup' => t('<p>No available Views were found.</p>'),
+        '#markup' => $this->t('<p>No available Views were found.</p>'),
       );
     }
 
@@ -168,7 +167,7 @@ class ViewsFieldFormatter extends FormatterBase {
    * {@inheritdoc}
    */
   public function settingsSummary() {
-    $summary = array();
+    $summary = [];
     $settings = $this->getSettings();
     list($view, $view_display) = explode('::', $settings['view']);
     $multiple = ((bool) $settings['multiple'] === TRUE) ? 'Enabled' : 'Disabled';
@@ -187,15 +186,15 @@ class ViewsFieldFormatter extends FormatterBase {
     }
 
     if (isset($view)) {
-      $summary[] = t('View: @view', array('@view' => $view));
-      $summary[] = t('Display: @display', array('@display' => $view_display));
-      $summary[] = t('Multiple: @multiple', array('@multiple' => t($multiple)));
-      $summary[] = t('Argument(s): @arguments', array('@arguments' => implode(', ', $arguments)));
+      $summary[] = t('View: @view', ['@view' => $view]);
+      $summary[] = t('Display: @display', ['@display' => $view_display]);
+      $summary[] = t('Multiple: @multiple', ['@multiple' => t($multiple)]);
+      $summary[] = t('Argument(s): @arguments', ['@arguments' => implode(', ', $arguments)]);
     }
 
     if ($multiple == 'Enabled') {
       if (!empty($settings['implode_character'])) {
-        $summary[] = t('Implode character: @character', array('@character' => $settings['implode_character']));
+        $summary[] = t('Implode character: @character', ['@character' => $settings['implode_character']]);
       }
     }
 
@@ -206,7 +205,7 @@ class ViewsFieldFormatter extends FormatterBase {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    $elements = array();
+    $elements = [];
     $settings = $this->getSettings();
     $cardinality = $items->getFieldDefinition()->getFieldStorageDefinition()->getCardinality();
     list($view, $view_display) = explode('::', $settings['view'], 2);
@@ -275,7 +274,7 @@ class ViewsFieldFormatter extends FormatterBase {
 
           if (((bool) $settings['multiple'] === TRUE) && ($cardinality != 1)) {
             if (!empty($settings['implode_character'])) {
-              $values = array();
+              $values = [];
 
               /** @var FieldItemInterface $item */
               foreach ($items as $item) {
@@ -286,9 +285,11 @@ class ViewsFieldFormatter extends FormatterBase {
             }
           }
           break;
+
         case 'entity_id':
           $arguments[$argument] = $items->getParent()->getValue()->id();
           break;
+
         case 'delta':
           $arguments[$argument] = isset($delta) ? $delta : NULL;
           break;
