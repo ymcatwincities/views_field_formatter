@@ -58,7 +58,7 @@ class ViewsFieldFormatter extends FormatterBase {
   public static function defaultSettings() {
     return [
       'view' => '',
-      'arguments' => ['field_value', 'entity_id', 'delta'],
+      'arguments' => [],
       'multiple' => FALSE,
       'implode_character' => '',
     ];
@@ -84,7 +84,7 @@ class ViewsFieldFormatter extends FormatterBase {
     $options = array();
     foreach (\Drupal\views\Views::getAllViews() as $view) {
       foreach ($view->get('display') as $display) {
-        $options[$view->get('label')][$view->get('id') . '::' . $display['id']] = $display['display_title'];
+        $options[$view->get('label')][$view->get('id') . '::' . $display['id']] = sprintf('%s - %s', $view->get('label'), $display['display_title']);
       }
     }
 
@@ -105,7 +105,7 @@ class ViewsFieldFormatter extends FormatterBase {
           'relationship' => 'sibling',
           'group' => 'arguments-order-weight',
         ]],
-        '#caption' => $this->t('Select the arguments to send to the views, you can reorder them.'),
+        '#caption' => $this->t('Select the arguments to send to the views, you can reorder them. These arguments can be used as contextual filters in the selected View.'),
       ];
 
       $default_arguments = array_keys(array_filter($this->getSetting('arguments'), function($argument) {
@@ -117,9 +117,6 @@ class ViewsFieldFormatter extends FormatterBase {
         $arguments[$argument_id] = $argument_name;
       }
       foreach ($arguments as $argument_id => $argument_name) {
-        if (is_array($argument_name)) {
-          continue;
-        }
         $element['arguments'][$argument_id] = [
           'checked' => [
             '#type' => 'checkbox',
@@ -138,7 +135,7 @@ class ViewsFieldFormatter extends FormatterBase {
 
       $element['multiple'] = array(
         '#title' => $this->t('Multiple'),
-        '#description' => $this->t('If the field is configured as multiple, should we display a view per item ? If selected, there will be one view per item. The arguments passed to that view are in this order: the field item value, the entity id and the item delta.'),
+        '#description' => $this->t('If the field is configured as multiple (<em>greater than one</em>), should we display a view per item ? If selected, there will be one view per item.'),
         '#type' => 'checkbox',
         '#default_value' => boolval($this->getSetting('multiple')),
       );
