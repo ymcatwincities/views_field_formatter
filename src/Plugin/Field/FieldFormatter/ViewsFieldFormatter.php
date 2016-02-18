@@ -141,7 +141,7 @@ class ViewsFieldFormatter extends FormatterBase {
       );
       $element['implode_character'] = array(
         '#title' => $this->t('Implode with this character'),
-        '#description' => $this->t('If it is set, all field values are imploded with this character and sent as one views argument. Empty to disable.'),
+        '#description' => $this->t('If it is set, all field values are imploded with this character (<em>ex: a simple comma</em>) and sent as one views argument. Empty to disable.'),
         '#type' => 'textfield',
         '#default_value' => $this->getSetting('implode_character'),
         '#states' => array(
@@ -185,8 +185,8 @@ class ViewsFieldFormatter extends FormatterBase {
     if (isset($view)) {
       $summary[] = t('View: @view', ['@view' => $view]);
       $summary[] = t('Display: @display', ['@display' => $view_display]);
-      $summary[] = t('Multiple: @multiple', ['@multiple' => t($multiple)]);
       $summary[] = t('Argument(s): @arguments', ['@arguments' => implode(', ', $arguments)]);
+      $summary[] = t('Multiple: @multiple', ['@multiple' => t($multiple)]);
     }
 
     if ($multiple == 'Enabled') {
