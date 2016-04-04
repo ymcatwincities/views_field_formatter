@@ -58,7 +58,11 @@ class ViewsFieldFormatter extends FormatterBase {
   public static function defaultSettings() {
     return [
       'view' => '',
-      'arguments' => [],
+      'arguments' => [
+        'field_value' => ['checked' => TRUE],
+        'entity_id' => ['checked' => TRUE],
+        'delta' => ['checked' => TRUE],
+      ],
       'multiple' => FALSE,
       'implode_character' => '',
     ];
