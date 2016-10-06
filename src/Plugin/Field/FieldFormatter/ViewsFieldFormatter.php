@@ -8,6 +8,7 @@
 
 namespace Drupal\views_field_formatter\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -272,7 +273,7 @@ class ViewsFieldFormatter extends FormatterBase {
 
           /** @var FieldItemInterface $item */
           if ($item) {
-            $arguments[$argument] = isset($item->getValue()[$column]) ? $item->getValue()[$column] : NULL;
+            $arguments[$argument] = !empty($column) && isset($item->getValue()[$column]) ? $item->getValue()[$column] : NULL;
           }
 
           if (((bool) $settings['multiple'] === TRUE) && ($cardinality != 1)) {
@@ -281,7 +282,7 @@ class ViewsFieldFormatter extends FormatterBase {
 
               /** @var FieldItemInterface $item */
               foreach ($items as $item) {
-                $values[] = isset($item->getValue()[$column]) ? $item->getValue()[$column] : NULL;
+                $values[] = !empty($column) && isset($item->getValue()[$column]) ? $item->getValue()[$column] : NULL;
               }
 
               $arguments[$argument] = implode($settings['implode_character'], array_filter($values));
