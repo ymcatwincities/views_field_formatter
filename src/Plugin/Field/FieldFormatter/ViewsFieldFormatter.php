@@ -1,14 +1,8 @@
 <?php
 
-/**
- * @file
- * Contains
- *   \Drupal\views_field_formatter\Plugin\Field\FieldFormatter\ViewsFieldFormatter.
- */
-
 namespace Drupal\views_field_formatter\Plugin\Field\FieldFormatter;
 
-use Drupal\Core\Field\FieldItemInterface;
+use Drupal\views\Views;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -87,7 +81,7 @@ class ViewsFieldFormatter extends FormatterBase {
     $element = parent::settingsForm($form, $form_state);
 
     $options = array();
-    foreach (\Drupal\views\Views::getAllViews() as $view) {
+    foreach (Views::getAllViews() as $view) {
       foreach ($view->get('display') as $display) {
         $options[$view->get('label')][$view->get('id') . '::' . $display['id']] = sprintf('%s - %s', $view->get('label'), $display['display_title']);
       }
@@ -109,11 +103,12 @@ class ViewsFieldFormatter extends FormatterBase {
           'action' => 'order',
           'relationship' => 'sibling',
           'group' => 'arguments-order-weight',
-        ]],
+        ],
+        ],
         '#caption' => $this->t('Select the arguments to send to the views, you can reorder them. These arguments can be used as contextual filters in the selected View.'),
       ];
 
-      $default_arguments = array_keys(array_filter($this->getSetting('arguments'), function($argument) {
+      $default_arguments = array_keys(array_filter($this->getSetting('arguments'), function ($argument) {
         return $argument['checked'];
       }));
 
@@ -174,12 +169,12 @@ class ViewsFieldFormatter extends FormatterBase {
     list($view, $view_display) = explode('::', $settings['view']);
     $multiple = ((bool) $settings['multiple'] === TRUE) ? 'Enabled' : 'Disabled';
 
-    $arguments = array_filter($settings['arguments'], function($argument) {
+    $arguments = array_filter($settings['arguments'], function ($argument) {
       return $argument['checked'];
     });
 
     $all_arguments = $this->getDefaultArguments();
-    $arguments = array_map(function($argument) use($all_arguments) {
+    $arguments = array_map(function ($argument) use ($all_arguments) {
       return $all_arguments[$argument];
     }, array_keys($arguments));
 
@@ -256,7 +251,7 @@ class ViewsFieldFormatter extends FormatterBase {
   private function getArguments(FieldItemListInterface $items, $item, $delta) {
     $settings = $this->getSettings();
 
-    $user_arguments = array_keys(array_filter($settings['arguments'], function($argument) {
+    $user_arguments = array_keys(array_filter($settings['arguments'], function ($argument) {
       return $argument['checked'];
     }));
 
