@@ -2,6 +2,7 @@
 
 namespace Drupal\views_field_formatter\Plugin\Field\FieldFormatter;
 
+use Drupal\views\Entity\View;
 use Drupal\views\Views;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
@@ -303,10 +304,11 @@ class ViewsFieldFormatter extends FormatterBase {
   public function calculateDependencies() {
     $dependencies = parent::calculateDependencies();
 
-    list($view_id) = explode('::', $this->options['view'], 2);
+    list($view_id) = explode('::', $this->getSetting('view'), 2);
     // Don't call the current view, as it would result into an infinite recursion.
-    if ($view_id && $this->view->storage->id() != $view_id) {
-      $view = $this->viewStorage->load($view_id);
+    // TODO: Check for infinite loop here.
+    if ($view_id) {
+      $view = View::load($view_id);
       $dependencies[$view->getConfigDependencyKey()][] = $view->getConfigDependencyName();
     }
 
