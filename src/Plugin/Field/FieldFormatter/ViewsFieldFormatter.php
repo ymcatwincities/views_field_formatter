@@ -260,7 +260,7 @@ class ViewsFieldFormatter extends FormatterBase {
       switch ($argument) {
         case 'field_value':
           $columns = array_keys(
-            $items->getFieldDefinition()->getFieldStorageDefinition()->getSchema()['columns'],
+            $items->getFieldDefinition()->getFieldStorageDefinition()->getSchema()['columns']
           );
           $column = array_shift($columns);
           $cardinality = $items->getFieldDefinition()->getFieldStorageDefinition()->getCardinality();
