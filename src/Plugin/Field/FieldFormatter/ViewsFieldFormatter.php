@@ -259,11 +259,10 @@ class ViewsFieldFormatter extends FormatterBase {
     foreach ($user_arguments as $argument) {
       switch ($argument) {
         case 'field_value':
-          $column = array_shift(
-            array_keys(
-              $items->getFieldDefinition()->getFieldStorageDefinition()->getSchema()['columns']
-            )
+          $columns = array_keys(
+            $items->getFieldDefinition()->getFieldStorageDefinition()->getSchema()['columns'],
           );
+          $column = array_shift($columns);
           $cardinality = $items->getFieldDefinition()->getFieldStorageDefinition()->getCardinality();
 
           /** @var FieldItemInterface $item */
