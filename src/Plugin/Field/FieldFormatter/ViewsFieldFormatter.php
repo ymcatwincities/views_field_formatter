@@ -9,6 +9,8 @@ use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
+ * Class ViewsFieldFormatter.
+ *
  * @FieldFormatter(
  *  id = "views_field_formatter",
  *  label = @Translation("View"),
@@ -65,7 +67,7 @@ class ViewsFieldFormatter extends FormatterBase {
   }
 
   /**
-   * @return array
+   * Get the defaul Arguments.
    */
   protected function getDefaultArguments() {
     return [
@@ -91,7 +93,7 @@ class ViewsFieldFormatter extends FormatterBase {
     if (!empty($options)) {
       $element['view'] = array(
         '#title' => $this->t('View'),
-        '#description' => $this->t('Select the view that will be displayed instead of the field\'s value'),
+        '#description' => $this->t("Select the view that will be displayed instead of the field's value"),
         '#type' => 'select',
         '#default_value' => $this->getSetting('view'),
         '#options' => $options,
@@ -187,7 +189,7 @@ class ViewsFieldFormatter extends FormatterBase {
       $summary[] = t('View: @view', ['@view' => $view]);
       $summary[] = t('Display: @display', ['@display' => $view_display]);
       $summary[] = t('Argument(s): @arguments', ['@arguments' => implode(', ', $arguments)]);
-      $summary[] = t('Multiple: @multiple', ['@multiple' => t($multiple)]);
+      $summary[] = t('Multiple: @multiple', ['@multiple' => $multiple]);
     }
 
     if ($multiple == 'Enabled') {
@@ -242,12 +244,6 @@ class ViewsFieldFormatter extends FormatterBase {
 
   /**
    * Helper function. Returns the arguments to send to the views.
-   *
-   * @param \Drupal\Core\Field\FieldItemListInterface $items
-   * @param $item
-   * @param $delta
-   *
-   * @return mixed
    */
   private function getArguments(FieldItemListInterface $items, $item, $delta) {
     $settings = $this->getSettings();
@@ -305,7 +301,8 @@ class ViewsFieldFormatter extends FormatterBase {
     $dependencies = parent::calculateDependencies();
 
     list($view_id) = explode('::', $this->getSetting('view'), 2);
-    // Don't call the current view, as it would result into an infinite recursion.
+    // Don't call the current view, as it would result into an
+    // infinite recursion.
     // TODO: Check for infinite loop here.
     if ($view_id) {
       $view = View::load($view_id);
