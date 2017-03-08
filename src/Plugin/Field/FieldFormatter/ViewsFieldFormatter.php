@@ -24,6 +24,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   "decimal",
  *   "email",
  *   "entity_reference",
+ *   "entity_reference_revisions",
  *   "expression_field",
  *   "file",
  *   "float",
