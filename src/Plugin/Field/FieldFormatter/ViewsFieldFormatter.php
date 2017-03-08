@@ -143,6 +143,7 @@ class ViewsFieldFormatter extends FormatterBase {
         '#type' => 'checkbox',
         '#default_value' => boolval($this->getSetting('multiple')),
       );
+      $field_name = $this->fieldDefinition->getName();
       $element['implode_character'] = array(
         '#title' => $this->t('Implode with this character'),
         '#description' => $this->t('If it is set, all field values are imploded with this character (<em>ex: a simple comma</em>) and sent as one views argument. Empty to disable.'),
@@ -150,7 +151,7 @@ class ViewsFieldFormatter extends FormatterBase {
         '#default_value' => $this->getSetting('implode_character'),
         '#states' => array(
           'visible' => array(
-            ':input[name="fields[body][settings_edit_form][settings][multiple]"]' => array('checked' => TRUE),
+            ':input[name="fields[' . $field_name . '][settings_edit_form][settings][multiple]"]' => array('checked' => TRUE),
           ),
         ),
       );
