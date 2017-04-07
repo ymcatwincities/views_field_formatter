@@ -211,7 +211,7 @@ class ViewsFieldFormatter extends FormatterBase {
     $settings = $this->getSettings();
     $cardinality = $items->getFieldDefinition()->getFieldStorageDefinition()->getCardinality();
 
-    if (isset($settings['view']) && !empty($settings['view']) && strpos('::', $settings['view']) !== FALSE) {
+    if (isset($settings['view']) && !empty($settings['view']) && strpos($settings['view'], '::') !== FALSE) {
       list($view_id, $view_display) = explode('::', $settings['view'], 2);
     } else {
       return $elements;
