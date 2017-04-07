@@ -210,7 +210,12 @@ class ViewsFieldFormatter extends FormatterBase {
     $elements = [];
     $settings = $this->getSettings();
     $cardinality = $items->getFieldDefinition()->getFieldStorageDefinition()->getCardinality();
-    list($view_id, $view_display) = explode('::', $settings['view'], 2);
+
+    if (isset($settings['view']) && !empty($settings['view']) && strpos('::', $settings['view']) !== FALSE) {
+      list($view_id, $view_display) = explode('::', $settings['view'], 2);
+    } else {
+      return $elements;
+    }
 
     $view = Views::getView($view_id);
     if (!$view || !$view->access($view_display)) {
