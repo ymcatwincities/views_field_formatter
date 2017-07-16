@@ -316,7 +316,9 @@ class ViewsFieldFormatter extends FormatterBase {
                 $values[] = !empty($column) && isset($item->getValue()[$column]) ? $item->getValue()[$column] : NULL;
               }
 
-              $arguments[$argument] = implode($settings['implode_character'], array_filter($values));
+              if (!empty($values)) {
+                $arguments[$argument] = implode($settings['implode_character'], array_filter($values));
+              }
             }
           }
           break;
