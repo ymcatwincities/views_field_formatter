@@ -227,6 +227,8 @@ class ViewsFieldFormatter extends FormatterBase {
       return $elements;
     }
 
+    $arguments = $this->getArguments($items, $items[0], 0);
+
     // If empty views are hidden, execute view to count result.
     if (!empty($settings['hide_empty'])) {
       $view = Views::getView($view_id);
@@ -234,7 +236,16 @@ class ViewsFieldFormatter extends FormatterBase {
         return $elements;
       }
 
-      $view->setArguments($this->getArguments($items, $items[0], 0));
+      // We try to reproduce the arguments which will be used below. We cannot
+      // just use $this->getArguments($items, $items[0], 0) as this might return
+      // items, which for example no longer exist, still you want to show the view
+      // when there are more possible entries.
+      if ((TRUE === (bool) $settings['multiple']) && (1 != $cardinality)) {
+        if (!empty($settings['implode_character'])) {
+          $arguments = $this->getArguments($items, NULL, 0);
+        }
+      }
+      $view->setArguments($arguments);
       $view->setDisplay($view_display);
       $view->preExecute();
       $view->execute();
@@ -250,13 +261,13 @@ class ViewsFieldFormatter extends FormatterBase {
       ),
     );
 
-    if (((bool) $settings['multiple'] === TRUE) && ($cardinality != 1)) {
+    if ((TRUE === (bool) $settings['multiple']) && (1 != $cardinality)) {
       if (!empty($settings['implode_character'])) {
         $elements[0] = [
           '#type' => 'view',
           '#name' => $view_id,
           '#display_id' => $view_display,
-          '#arguments' => $this->getArguments($items, NULL, 0),
+          '#arguments' => $arguments,
         ];
       }
       else {
@@ -265,7 +276,7 @@ class ViewsFieldFormatter extends FormatterBase {
             '#type' => 'view',
             '#name' => $view_id,
             '#display_id' => $view_display,
-            '#arguments' => $this->getArguments($items, $item, $delta),
+            '#arguments' => $arguments,
           ];
         }
       }
@@ -275,7 +286,7 @@ class ViewsFieldFormatter extends FormatterBase {
         '#type' => 'view',
         '#name' => $view_id,
         '#display_id' => $view_display,
-        '#arguments' => $this->getArguments($items, $items[0], 0),
+        '#arguments' => $arguments,
       ];
     }
 
