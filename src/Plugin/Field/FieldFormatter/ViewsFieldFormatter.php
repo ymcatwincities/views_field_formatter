@@ -185,7 +185,9 @@ class ViewsFieldFormatter extends FormatterBase
 
         // For default settings, don't show a summary.
         if (empty($settings['view'])) {
-          return [];
+          return [
+              $this->t('Not configured yet.'),
+          ];
         }
 
         list($view, $view_display) = explode('::', $settings['view']);
