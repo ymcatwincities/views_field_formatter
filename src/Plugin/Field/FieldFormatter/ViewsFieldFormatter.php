@@ -14,6 +14,7 @@ use Drupal\views\Views;
  * @FieldFormatter(
  *  id = "views_field_formatter",
  *  label = @Translation("View"),
+ *  weight = 100,
  *  field_types = {
  *   "boolean",
  *   "changed",
