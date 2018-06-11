@@ -86,92 +86,97 @@ class ViewsFieldFormatter extends FormatterBase
             }
         }
 
-        if (!empty($options)) {
-            $element['view'] = [
-                '#title' => $this->t('View'),
-                '#description' => $this->t("Select the view that will be displayed instead of the field's value."),
-                '#type' => 'select',
-                '#default_value' => $this->getSetting('view'),
-                '#options' => $options,
-            ];
-
-            $element['arguments'] = [
-                '#type' => 'table',
-                '#header' => [$this->t('View Arguments'), $this->t('Weight')],
-                '#tabledrag' => [[
-                    'action' => 'order',
-                    'relationship' => 'sibling',
-                    'group' => 'arguments-order-weight',
-                ],
-                ],
-                '#caption' => $this->t(
-                    'Select the arguments to send to the views, you can reorder them.
-                          These arguments can be used as contextual filters in the selected View.'
-                ),
-            ];
-
-            $default_arguments = array_keys(array_filter($this->getSetting('arguments'), function ($argument) {
-                return $argument['checked'];
-            }));
-
-            $arguments = array_combine($default_arguments, $default_arguments);
-            foreach ($this->getDefaultArguments() as $argument_id => $argument_name) {
-                $arguments[$argument_id] = $argument_name;
-            }
-            foreach ($arguments as $argument_id => $argument_name) {
-                $element['arguments'][$argument_id] = [
-                    'checked' => [
-                        '#type' => 'checkbox',
-                        '#title' => $argument_name,
-                        '#default_value' => in_array($argument_id, $default_arguments),
-                    ],
-                    'weight' => [
-                        '#type' => 'weight',
-                        '#title' => $this->t('Weight for @title', ['@title' => $argument_name]),
-                        '#title_display' => 'invisible',
-                        '#attributes' => ['class' => ['arguments-order-weight']],
-                    ],
-                    '#attributes' => ['class' => ['draggable']],
-                ];
-            }
-
-            $element['hide_empty'] = [
-                '#title' => $this->t('Hide empty views'),
-                '#description' => $this->t('Do not display the field if the view is empty.'),
-                '#type' => 'checkbox',
-                '#default_value' => boolval($this->getSetting('hide_empty')),
-            ];
-
-            $element['multiple'] = [
-                '#title' => $this->t('Multiple'),
-                '#description' => $this->t(
-                    'If the field is configured as multiple (<em>greater than one</em>),
-                          should we display a view per item ? If selected, there will be one view per item.'
-                ),
-                '#type' => 'checkbox',
-                '#default_value' => boolval($this->getSetting('multiple')),
-            ];
-            $field_name = $this->fieldDefinition->getName();
-            $element['implode_character'] = [
-                '#title' => $this->t('Implode with this character'),
-                '#description' => $this->t(
-                    'If it is set, all field values are imploded with this character (<em>ex: a simple comma</em>)
-                          and sent as one views argument. Empty to disable.'
-                ),
-                '#type' => 'textfield',
-                '#default_value' => $this->getSetting('implode_character'),
-                '#states' => [
-                    'visible' => [
-                        ':input[name="fields[' . $field_name . '][settings_edit_form][settings][multiple]"]' =>
-                            ['checked' => true],
-                    ],
-                ],
-            ];
-        } else {
+        if ([] === $options) {
             $element['help'] = [
-                '#markup' => $this->t('<p>No available Views were found.</p>'),
+                '#markup' => '<p>' . $this->t('No available Views were found.') . '</p>',
+            ];
+
+            return $element;
+        }
+
+        $element['view'] = [
+            '#title' => $this->t('View'),
+            '#description' => $this->t("Select the view that will be displayed instead of the field's value."),
+            '#type' => 'select',
+            '#default_value' => $this->getSetting('view'),
+            '#options' => $options,
+        ];
+
+        $element['arguments'] = [
+            '#type' => 'table',
+            '#header' => [$this->t('View Arguments'), $this->t('Weight')],
+            '#tabledrag' => [[
+                'action' => 'order',
+                'relationship' => 'sibling',
+                'group' => 'arguments-order-weight',
+            ],
+            ],
+            '#caption' => $this->t(
+                'Select the arguments to send to the views, you can reorder them.
+                          These arguments can be used as contextual filters in the selected View.'
+            ),
+        ];
+
+        $default_arguments = array_keys(array_filter($this->getSetting('arguments'), function ($argument) {
+            return $argument['checked'];
+        }));
+
+        $arguments = array_combine($default_arguments, $default_arguments);
+        foreach ($this->getDefaultArguments() as $argument_id => $argument_name) {
+            $arguments[$argument_id] = $argument_name;
+        }
+
+        foreach ($arguments as $argument_id => $argument_name) {
+            $element['arguments'][$argument_id] = [
+                'checked' => [
+                    '#type' => 'checkbox',
+                    '#title' => $argument_name,
+                    '#default_value' => in_array($argument_id, $default_arguments),
+                ],
+                'weight' => [
+                    '#type' => 'weight',
+                    '#title' => $this->t('Weight for @title', ['@title' => $argument_name]),
+                    '#title_display' => 'invisible',
+                    '#attributes' => ['class' => ['arguments-order-weight']],
+                ],
+                '#attributes' => ['class' => ['draggable']],
             ];
         }
+
+        $element['hide_empty'] = [
+            '#title' => $this->t('Hide empty views'),
+            '#description' => $this->t('Do not display the field if the view is empty.'),
+            '#type' => 'checkbox',
+            '#default_value' => boolval($this->getSetting('hide_empty')),
+        ];
+
+        $element['multiple'] = [
+            '#title' => $this->t('Multiple'),
+            '#description' => $this->t(
+                'If the field is configured as multiple (<em>greater than one</em>),
+                          should we display a view per item ? If selected, there will be one view per item.'
+            ),
+            '#type' => 'checkbox',
+            '#default_value' => boolval($this->getSetting('multiple')),
+        ];
+
+        $element['implode_character'] = [
+            '#title' => $this->t('Implode with this character'),
+            '#description' => $this->t(
+                'If it is set, all field values are imploded with this character (<em>ex: a simple comma</em>)
+                          and sent as one views argument. Empty to disable.'
+            ),
+            '#type' => 'textfield',
+            '#default_value' => $this->getSetting('implode_character'),
+            '#states' => [
+                'visible' => [
+                    ':input[name="fields[' .
+                    $this->fieldDefinition->getName() .
+                    '][settings_edit_form][settings][multiple]"]' =>
+                        ['checked' => true],
+                ],
+            ],
+        ];
 
         return $element;
     }
@@ -185,13 +190,13 @@ class ViewsFieldFormatter extends FormatterBase
         $settings = $this->getSettings();
 
         // For default settings, don't show a summary.
-        if (empty($settings['view'])) {
+        if ([] === $settings['view']) {
             return [
                 $this->t('Not configured yet.'),
             ];
         }
 
-        list($view, $view_display) = explode('::', $settings['view']);
+        list($view, $view_display) = explode('::', $settings['view'], 2);
         $multiple = (true === (bool) $settings['multiple']) ? 'Enabled' : 'Disabled';
         $hide_empty = (true === (bool) $settings['hide_empty']) ? 'Hide' : 'Display';
 
@@ -204,11 +209,11 @@ class ViewsFieldFormatter extends FormatterBase
             return $all_arguments[$argument];
         }, array_keys($arguments));
 
-        if (empty($arguments)) {
+        if ([] === $arguments) {
             $arguments[] = $this->t('None');
         }
 
-        if (isset($view)) {
+        if (null !== $view) {
             $summary[] = t('View: @view', ['@view' => $view]);
             $summary[] = t('Display: @display', ['@display' => $view_display]);
             $summary[] = t('Argument(s): @arguments', ['@arguments' => implode(', ', $arguments)]);
@@ -216,10 +221,8 @@ class ViewsFieldFormatter extends FormatterBase
             $summary[] = t('Multiple: @multiple', ['@multiple' => $multiple]);
         }
 
-        if ('Enabled' == $multiple) {
-            if (!empty($settings['implode_character'])) {
-                $summary[] = t('Implode character: @character', ['@character' => $settings['implode_character']]);
-            }
+        if ((true === (bool) $settings['multiple']) && ('' !== $settings['implode_character'])) {
+            $summary[] = t('Implode character: @character', ['@character' => $settings['implode_character']]);
         }
 
         return $summary;
