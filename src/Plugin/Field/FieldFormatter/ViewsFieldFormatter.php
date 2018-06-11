@@ -52,7 +52,6 @@ use Drupal\views\Views;
  */
 class ViewsFieldFormatter extends FormatterBase
 {
-
     /**
      * {@inheritdoc}
      */
@@ -64,6 +63,7 @@ class ViewsFieldFormatter extends FormatterBase
                 'field_value' => ['checked' => true],
                 'entity_id' => ['checked' => true],
                 'delta' => ['checked' => true],
+                'entity_revision_id' => ['checked' => true],
             ],
             'hide_empty' => false,
             'multiple' => false,
@@ -89,7 +89,7 @@ class ViewsFieldFormatter extends FormatterBase
         if (!empty($options)) {
             $element['view'] = [
                 '#title' => $this->t('View'),
-                '#description' => $this->t("Select the view that will be displayed instead of the field's value"),
+                '#description' => $this->t("Select the view that will be displayed instead of the field's value."),
                 '#type' => 'select',
                 '#default_value' => $this->getSetting('view'),
                 '#options' => $options,
@@ -186,9 +186,9 @@ class ViewsFieldFormatter extends FormatterBase
 
         // For default settings, don't show a summary.
         if (empty($settings['view'])) {
-          return [
-              $this->t('Not configured yet.'),
-          ];
+            return [
+                $this->t('Not configured yet.'),
+            ];
         }
 
         list($view, $view_display) = explode('::', $settings['view']);
@@ -315,7 +315,7 @@ class ViewsFieldFormatter extends FormatterBase
         // Don't call the current view, as it would result into an
         // infinite recursion.
         // TODO: Check for infinite loop here.
-        if ($view_id) {
+        if (null !== $view_id) {
             $view = View::load($view_id);
             $dependencies[$view->getConfigDependencyKey()][] = $view->getConfigDependencyName();
         }
@@ -324,7 +324,7 @@ class ViewsFieldFormatter extends FormatterBase
     }
 
     /**
-     * Get the defaul Arguments.
+     * Get the default Arguments.
      */
     protected function getDefaultArguments()
     {
@@ -332,16 +332,20 @@ class ViewsFieldFormatter extends FormatterBase
             'field_value' => $this->t('Field value'),
             'entity_id' => $this->t('Entity ID'),
             'delta' => $this->t('Delta'),
+            'entity_revision_id' => $this->t('Entity revision ID'),
         ];
     }
 
     /**
      * Helper function. Returns the arguments to send to the views.
      *
+     * @param \Drupal\Core\Field\FieldItemListInterface $items
      * @param mixed $item
      * @param mixed $delta
+     *
+     * @return array
      */
-    private function getArguments(FieldItemListInterface $items, $item, $delta)
+    protected function getArguments(FieldItemListInterface $items, $item, $delta)
     {
         $settings = $this->getSettings();
 
@@ -385,6 +389,11 @@ class ViewsFieldFormatter extends FormatterBase
 
                 case 'entity_id':
                     $arguments[$argument] = $items->getParent()->getValue()->id();
+
+                    break;
+
+                case 'entity_revision_id':
+                    $arguments[$argument] = $items->getParent()->getValue()->getRevisionId();
 
                     break;
 
