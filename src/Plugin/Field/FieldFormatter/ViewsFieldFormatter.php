@@ -318,11 +318,8 @@ class ViewsFieldFormatter extends FormatterBase
         // Don't call the current view, as it would result into an
         // infinite recursion.
         // TODO: Check for infinite loop here.
-        if (null !== $view_id) {
-            $view = View::load($view_id);
-            if (!empty($view->getConfigDependencyKey()) && isset($view->getConfigDependencyKey())) {
-                $dependencies[$view->getConfigDependencyKey()][] = $view->getConfigDependencyName();
-            }
+        if (null !== $view_id && $view = View::load($view_id)) {
+            $dependencies[$view->getConfigDependencyKey()][] = $view->getConfigDependencyName();
         }
 
         return $dependencies;
