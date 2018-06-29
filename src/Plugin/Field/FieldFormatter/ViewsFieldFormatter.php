@@ -275,17 +275,16 @@ class ViewsFieldFormatter extends FormatterBase
             '#cache' => [
                 'max-age' => 0,
             ],
+            [
+                '#type' => 'view',
+                '#name' => $view_id,
+                '#display_id' => $view_display,
+                '#arguments' => $arguments,
+            ],
         ];
 
         if ((true === (bool) $settings['multiple']) && (1 != $cardinality)) {
-            if (!empty($settings['implode_character'])) {
-                $elements[0] = [
-                    '#type' => 'view',
-                    '#name' => $view_id,
-                    '#display_id' => $view_display,
-                    '#arguments' => $arguments,
-                ];
-            } else {
+            if (empty($settings['implode_character'])) {
                 foreach ($items as $delta => $item) {
                     $elements[$delta] = [
                         '#type' => 'view',
@@ -295,13 +294,6 @@ class ViewsFieldFormatter extends FormatterBase
                     ];
                 }
             }
-        } else {
-            $elements[0] = [
-                '#type' => 'view',
-                '#name' => $view_id,
-                '#display_id' => $view_display,
-                '#arguments' => $arguments,
-            ];
         }
 
         return $elements;
