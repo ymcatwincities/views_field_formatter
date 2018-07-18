@@ -190,7 +190,7 @@ class ViewsFieldFormatter extends FormatterBase
         $settings = $this->getSettings();
 
         // For default settings, don't show a summary.
-        if ([] === $settings['view']) {
+        if ('' === $settings['view']) {
             return [
                 $this->t('Not configured yet.'),
             ];
