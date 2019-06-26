@@ -305,7 +305,7 @@ class ViewsFieldFormatter extends FormatterBase {
             '#type' => 'view',
             '#name' => $view_id,
             '#display_id' => $view_display,
-            '#arguments' => $arguments,
+            '#arguments' => $this->getArguments($items, $items[$delta], $delta),
           ];
         }
       }
