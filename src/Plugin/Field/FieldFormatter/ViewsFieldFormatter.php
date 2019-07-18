@@ -14,42 +14,42 @@ use Drupal\views\Views;
  * Class ViewsFieldFormatter.
  *
  * @FieldFormatter(
- *  id = "views_field_formatter",
- *  label = @Translation("View"),
- *  weight = 100,
- *  field_types = {
- *   "boolean",
- *   "changed",
- *   "comment",
- *   "computed",
- *   "created",
- *   "datetime",
- *   "decimal",
- *   "email",
- *   "entity_reference",
- *   "entity_reference_revisions",
- *   "expression_field",
- *   "file",
- *   "float",
- *   "image",
- *   "integer",
- *   "language",
- *   "link",
- *   "list_float",
- *   "list_integer",
- *   "list_string",
- *   "map",
- *   "path",
- *   "string",
- *   "string_long",
- *   "taxonomy_term_reference",
- *   "text",
- *   "text_long",
- *   "text_with_summary",
- *   "timestamp",
- *   "uri",
- *   "uuid"
- *   }
+ *     id="views_field_formatter",
+ *     label=@Translation("View"),
+ *     weight=100,
+ *     field_types={
+ *         "boolean",
+ *         "changed",
+ *         "comment",
+ *         "computed",
+ *         "created",
+ *         "datetime",
+ *         "decimal",
+ *         "email",
+ *         "entity_reference",
+ *         "entity_reference_revisions",
+ *         "expression_field",
+ *         "file",
+ *         "float",
+ *         "image",
+ *         "integer",
+ *         "language",
+ *         "link",
+ *         "list_float",
+ *         "list_integer",
+ *         "list_string",
+ *         "map",
+ *         "path",
+ *         "string",
+ *         "string_long",
+ *         "taxonomy_term_reference",
+ *         "text",
+ *         "text_long",
+ *         "text_with_summary",
+ *         "timestamp",
+ *         "uri",
+ *         "uuid"
+ *     }
  * )
  */
 class ViewsFieldFormatter extends FormatterBase {
@@ -60,7 +60,7 @@ class ViewsFieldFormatter extends FormatterBase {
   public function calculateDependencies() {
     $dependencies = parent::calculateDependencies();
 
-    list($view_id) = explode('::', $this->getSetting('view'), 2);
+    list($view_id) = \explode('::', $this->getSetting('view'), 2);
     // Don't call the current view, as it would result into an
     // infinite recursion.
     // TODO: Check for infinite loop here.
@@ -96,10 +96,11 @@ class ViewsFieldFormatter extends FormatterBase {
     $element = parent::settingsForm($form, $form_state);
 
     $options = [];
+
     foreach (Views::getAllViews() as $view) {
       foreach ($view->get('display') as $display) {
         $options[$view->get('label')][$view->get('id') . '::' . $display['id']] =
-                    sprintf('%s - %s', $view->get('label'), $display['display_title']);
+                    \sprintf('%s - %s', $view->get('label'), $display['display_title']);
       }
     }
 
@@ -129,16 +130,17 @@ class ViewsFieldFormatter extends FormatterBase {
       ],
       ],
       '#caption' => $this->t(
-          'Select the arguments to send to the views, you can reorder them.
+        'Select the arguments to send to the views, you can reorder them.
                           These arguments can be used as contextual filters in the selected View.'
       ),
     ];
 
-    $default_arguments = array_keys(array_filter($this->getSetting('arguments'), function ($argument) {
+    $default_arguments = \array_keys(\array_filter($this->getSetting('arguments'), static function ($argument) {
       return $argument['checked'];
     }));
 
-    $arguments = array_combine($default_arguments, $default_arguments);
+    $arguments = \array_combine($default_arguments, $default_arguments);
+
     foreach ($this->getDefaultArguments() as $argument_id => $argument_name) {
       $arguments[$argument_id] = $argument_name;
     }
@@ -148,7 +150,7 @@ class ViewsFieldFormatter extends FormatterBase {
         'checked' => [
           '#type' => 'checkbox',
           '#title' => $argument_name,
-          '#default_value' => in_array($argument_id, $default_arguments, TRUE),
+          '#default_value' => \in_array($argument_id, $default_arguments, TRUE),
         ],
         'weight' => [
           '#type' => 'weight',
@@ -164,23 +166,23 @@ class ViewsFieldFormatter extends FormatterBase {
       '#title' => $this->t('Hide empty views'),
       '#description' => $this->t('Do not display the field if the view is empty.'),
       '#type' => 'checkbox',
-      '#default_value' => boolval($this->getSetting('hide_empty')),
+      '#default_value' => (bool) ($this->getSetting('hide_empty')),
     ];
 
     $element['multiple'] = [
       '#title' => $this->t('Multiple'),
       '#description' => $this->t(
-          'If the field is configured as multiple (<em>greater than one</em>),
+        'If the field is configured as multiple (<em>greater than one</em>),
                           should we display a view per item ? If selected, there will be one view per item.'
       ),
       '#type' => 'checkbox',
-      '#default_value' => boolval($this->getSetting('multiple')),
+      '#default_value' => (bool) ($this->getSetting('multiple')),
     ];
 
     $element['implode_character'] = [
       '#title' => $this->t('Implode with this character'),
       '#description' => $this->t(
-          'If it is set, all field values are imploded with this character (<em>ex: a simple comma</em>)
+        'If it is set, all field values are imploded with this character (<em>ex: a simple comma</em>)
                           and sent as one views argument. Empty to disable.'
       ),
       '#type' => 'textfield',
@@ -211,33 +213,33 @@ class ViewsFieldFormatter extends FormatterBase {
       ];
     }
 
-    list($view, $view_display) = explode('::', $settings['view'], 2);
+    list($view, $view_display) = \explode('::', $settings['view'], 2);
     $multiple = ((bool) $settings['multiple'] === TRUE) ? 'Enabled' : 'Disabled';
     $hide_empty = ((bool) $settings['hide_empty'] === TRUE) ? 'Hide' : 'Display';
 
-    $arguments = array_filter($settings['arguments'], function ($argument) {
+    $arguments = \array_filter($settings['arguments'], static function ($argument) {
       return $argument['checked'];
     });
 
     $all_arguments = $this->getDefaultArguments();
-    $arguments = array_map(function ($argument) use ($all_arguments) {
+    $arguments = \array_map(static function ($argument) use ($all_arguments) {
       return $all_arguments[$argument];
-    }, array_keys($arguments));
+    }, \array_keys($arguments));
 
     if ([] === $arguments) {
       $arguments[] = $this->t('None');
     }
 
     if ($view !== NULL) {
-      $summary[] = t('View: @view', ['@view' => $view]);
-      $summary[] = t('Display: @display', ['@display' => $view_display]);
-      $summary[] = t('Argument(s): @arguments', ['@arguments' => implode(', ', $arguments)]);
-      $summary[] = t('Empty views: @hide_empty empty views', ['@hide_empty' => $hide_empty]);
-      $summary[] = t('Multiple: @multiple', ['@multiple' => $multiple]);
+      $summary[] = \t('View: @view', ['@view' => $view]);
+      $summary[] = \t('Display: @display', ['@display' => $view_display]);
+      $summary[] = \t('Argument(s): @arguments', ['@arguments' => \implode(', ', $arguments)]);
+      $summary[] = \t('Empty views: @hide_empty empty views', ['@hide_empty' => $hide_empty]);
+      $summary[] = \t('Multiple: @multiple', ['@multiple' => $multiple]);
     }
 
     if (((bool) $settings['multiple'] === TRUE) && ($settings['implode_character'] !== '')) {
-      $summary[] = t('Implode character: @character', ['@character' => $settings['implode_character']]);
+      $summary[] = \t('Implode character: @character', ['@character' => $settings['implode_character']]);
     }
 
     return $summary;
@@ -251,8 +253,8 @@ class ViewsFieldFormatter extends FormatterBase {
     $settings = $this->getSettings();
     $cardinality = $items->getFieldDefinition()->getFieldStorageDefinition()->getCardinality();
 
-    if (isset($settings['view']) && !empty($settings['view']) && strpos($settings['view'], '::') !== FALSE) {
-      list($view_id, $view_display) = explode('::', $settings['view'], 2);
+    if (isset($settings['view']) && !empty($settings['view']) && \mb_strpos($settings['view'], '::') !== FALSE) {
+      list($view_id, $view_display) = \explode('::', $settings['view'], 2);
     }
     else {
       return $elements;
@@ -263,6 +265,7 @@ class ViewsFieldFormatter extends FormatterBase {
     // If empty views are hidden, execute view to count result.
     if (!empty($settings['hide_empty'])) {
       $view = Views::getView($view_id);
+
       if (!$view || !$view->access($view_display)) {
         return $elements;
       }
@@ -330,18 +333,19 @@ class ViewsFieldFormatter extends FormatterBase {
   protected function getArguments(FieldItemListInterface $items, $item, $delta) {
     $settings = $this->getSettings();
 
-    $user_arguments = array_keys(array_filter($settings['arguments'], function ($argument) {
+    $user_arguments = \array_keys(\array_filter($settings['arguments'], static function ($argument) {
       return $argument['checked'];
     }));
 
     $arguments = [];
+
     foreach ($user_arguments as $argument) {
       switch ($argument) {
         case 'field_value':
-          $columns = array_keys(
-                $items->getFieldDefinition()->getFieldStorageDefinition()->getSchema()['columns']
+          $columns = \array_keys(
+            $items->getFieldDefinition()->getFieldStorageDefinition()->getSchema()['columns']
             );
-          $column = array_shift($columns);
+          $column = \array_shift($columns);
           $cardinality = $items->getFieldDefinition()->getFieldStorageDefinition()->getCardinality();
 
           /** @var FieldItemInterface $item */
@@ -361,7 +365,7 @@ class ViewsFieldFormatter extends FormatterBase {
               }
 
               if (!empty($values)) {
-                $arguments[$argument] = implode($settings['implode_character'], array_filter($values));
+                $arguments[$argument] = \implode($settings['implode_character'], \array_filter($values));
               }
             }
           }
@@ -385,7 +389,7 @@ class ViewsFieldFormatter extends FormatterBase {
       }
     }
 
-    return array_values($arguments);
+    return \array_values($arguments);
   }
 
   /**
