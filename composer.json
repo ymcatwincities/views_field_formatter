@@ -1,5 +1,5 @@
 {
-  "name": "drupol/views_field_formatter",
+  "name": "ymcatwincities/views_field_formatter",
   "description": "Provide a new field formatter: 'View' for each field types and allows you to select a View and to use its result instead of the original field value.",
   "type": "drupal-module",
   "license": "GPL-2.0+",
